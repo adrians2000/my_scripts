@@ -1,0 +1,5 @@
+- include_vars: vault.yml
+
+- name: "Create user performer"
+  user: name=performer state=present createhome=yes
+    password={{ user_pass }}

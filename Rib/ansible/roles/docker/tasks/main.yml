@@ -1,0 +1,5 @@
+- name: "Install Docker"
+  yum: name=docker state=latest
+  
+- name: "Start Docker and enable at boot"
+  service: name=docker state=started enabled=yes

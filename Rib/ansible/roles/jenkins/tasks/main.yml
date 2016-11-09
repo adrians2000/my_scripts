@@ -1,0 +1,3 @@
+- name: "Start Jenkins Container"
+  docker: name=jenkins image=jenkins ports=4488:8080
+    volumes=/data/jenkins:/var/jenkins_home state=running

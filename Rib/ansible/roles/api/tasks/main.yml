@@ -1,0 +1,17 @@
+- name: "Create folders"
+  file: path=/tmp/{{ item }} state=directory
+    owner=root grou-root mode=0750
+  with_items:
+    - api
+    - docker
+
+- name: "Copy Api to machine"
+  copy: src=api dest=/tmp/api/api.py
+    owner=root group=root mode=0644
+
+- name: "Copy Dockerfile"
+  copy: src=Dockerfile dest=/tmp/docker/Dockerfile
+    owner=root group=root mode=0644
+    
+- name: "Start apache container"
+  docker: name=apache image=my-apache2 state=running
