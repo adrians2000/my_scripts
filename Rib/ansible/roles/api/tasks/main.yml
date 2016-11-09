@@ -15,3 +15,4 @@
     
 - name: "Start apache container"
   docker: name=apache image=my-apache2 state=running
+    path=/tmp/docker
