@@ -1,0 +1,5 @@
+- Install Java latest
+- Install Docker
+- Create Docker container with jenkins
+- Create API (simple start/stop GET request)
+- Create Docker container with apache
