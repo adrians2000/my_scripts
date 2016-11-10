@@ -1,18 +1,19 @@
-- name: "Create folders"
-  file: path=/tmp/{{ item }} state=directory
-    owner=root grou-root mode=0750
-  with_items:
-    - api
-    - docker
-
-- name: "Copy Api to machine"
-  copy: src=api dest=/tmp/api/api.py
+- name: "Copy Dockerfile and api file to /tmp"
+  copy: src={{ item }} dest=/tmp/{{ item }}
     owner=root group=root mode=0644
-
-- name: "Copy Dockerfile"
-  copy: src=Dockerfile dest=/tmp/docker/Dockerfile
-    owner=root group=root mode=0644
+  with_items: 
+    - Dockerfile
+    - api.py
     
-- name: "Start apache container"
-  docker: name=apache image=my-apache2 state=running
-    path=/tmp/docker
+- name: "Check if there is an application container running"
+  shell: "docker ps | awk '{print $NF}' | grep my-app"
+  register: check_app
+  ignore_errors: True
+    
+- name: "Build app container"
+  shell: "cd /tmp && docker build -t centos:6.8 ."
+  when: check_app.stdout != "my-app"
+  
+- name: "Start app container"
+  shell: "docker run -dit --name my-app -p 5000:5000 centos:6.8"
+  when: check_app.stdout != "my-app"

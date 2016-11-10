@@ -1,2 +1,2 @@
 [dev]
-IP_here ansible_ssh_user=User_here   ansible_ssh_private_key_file=File_here
+IP_address     ansible_ssh_user=ec2-user 

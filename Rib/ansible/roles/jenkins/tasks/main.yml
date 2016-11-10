@@ -1,3 +1,16 @@
-- name: "Start Jenkins Container"
-  docker: name=jenkins image=jenkins ports=4488:8080
-    volumes=/data/jenkins:/var/jenkins_home state=running
+- name: "Check if there is a Jenkins container running"
+  shell: "docker ps | awk '{print $NF}' | grep jenkins"
+  register: check_jenkins
+  ignore_errors: True
+
+- name: "Pull Jenkins"
+  shell: "docker pull registry.hub.docker.com/zaiste/jenkins"
+  when: check_jenkins.stdout != "jenkins"
+  
+- name: "Tag registry"
+  shell: "docker tag registry.hub.docker.com/zaiste/jenkins jenkins-image"
+  when: check_jenkins.stdout  != "jenkins"
+  
+- name: "Start Jenkins container"
+  shell: "docker run -dit --name jenkins -p 49001:8080 -v $PWD/jenkins:/var/lib/jenkins -t jenkins-image"
+  when: check_jenkins.stdout  != "jenkins"
