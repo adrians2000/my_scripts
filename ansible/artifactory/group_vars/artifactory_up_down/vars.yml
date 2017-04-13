@@ -1,7 +1,9 @@
 ---
 playbook_action: "you have to change the variable here for the action you need to perform upload/download"
-artifactory_user: 
-artifactory_pass: 
-artifactory_url:
-foler_path: 
-artifact_name:
+artifactory_user: "Artifactory user used"
+artifactory_pass: "Artifactory pass used"
+artifactory_url: "Artifactory URL. Ex: http://localhost:8081. !!! do not put "/" at the end !!!"
+foler_path: "the folder where the artifact is placed under artifactory. ex /artifactory/my-repository/my/new/artifact/directory/"
+artifact_name: "artifact that will be uploaded or downloaded, this variable has to be changed at each builld"
+artifact_disk_location: "the location of the artifat on disk. ex: /Users/My_User/Desktop/"
+target_path_on_disk: "the path where the artifact will be downloaded"
