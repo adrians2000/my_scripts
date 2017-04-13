@@ -8,7 +8,7 @@
 # download artifact
 
 - name: Download artifact
-  shel: curl -u {{ artifactory_user }}:{{ artifactory_pass }} "{{ artifactory_url }}/{{ foler_path }}/{{ artifact_name }}" -O 
+  shel: curl -u {{ artifactory_user }}:{{ artifactory_pass }} "{{ artifactory_url }}/{{ foler_path }}/{{ artifact_name }}" -o {{ target_path }}
   when: playbook_action=="download"
 
 
