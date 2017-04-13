@@ -1,0 +1,7 @@
+---
+playbook_action: "you have to change the variable here for the action you need to perform upload/download"
+artifactory_user: 
+artifactory_pass: 
+artifactory_url:
+foler_path: 
+artifact_name:

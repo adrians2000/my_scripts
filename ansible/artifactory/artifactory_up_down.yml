@@ -1,0 +1,4 @@
+---
+- hosts: localhost
+  roles:
+   - artifactory_up_down
