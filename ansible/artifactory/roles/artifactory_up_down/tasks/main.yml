@@ -2,7 +2,7 @@
 # upload arifact role
 
 - name: Uplaod artifact
-  shel: curl -u {{ artifactory_user }}:{{ artifactory_pass }} -X PUT "{{ artifactory_url }}/{{ folder_path }}/{{ artifact_name }}" -T {{ artifact_on_disk }}
+  shel: curl -u {{ artifactory_user }}:{{ artifactory_pass }} -X PUT "{{ artifactory_url }}/{{ folder_path }}/{{ artifact_name }}" -T {{ artifact_disk_location }}/{{ artifact_name }}
   when: playbook_action=="upload"
 
 # download artifact
