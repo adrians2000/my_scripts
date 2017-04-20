@@ -1,0 +1,24 @@
+---
+# upload arifact role
+
+- name: Uplaod artifact
+  uri:
+    url: "{{ artifactory_url }}/{{ folder_path }}/{{ artifact_name }}"
+    src: {{ artifact_disk_location }}/{{ artifact_name }}
+    user: "{{ artifactory_user }}"
+    password: "{{ artifactory_pass }}"
+    method: PUT
+  when: playbook_action=="upload"
+
+# download artifact
+
+- name: Download artifact
+  uri:
+    url: "{{ artifactory_url }}/{{ folder_path }}/{{ artifact_name }}"
+    dest: {{ target_path_on_disk }}
+    user: "{{ artifactory_user }}"
+    password: "{{ artifactory_pass }}"
+    method: GET
+  when: playbook_action=="download"
+
+
