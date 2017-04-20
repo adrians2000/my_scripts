@@ -1,0 +1,3 @@
+### Dev Machines of any of your choice ###
+[dev]
+x.x.x.x     ansible_ssh_user="the_user_you_want_to_use"
