@@ -1,0 +1,5 @@
+---
+- hosts: dev
+  become: no
+  roles:
+   - artifactory_up_down
