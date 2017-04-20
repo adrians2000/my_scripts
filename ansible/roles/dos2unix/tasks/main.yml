@@ -1,0 +1,4 @@
+---
+#dos2unix
+- name: "dos 2 unix "
+  package: name=dos2unix state=present
