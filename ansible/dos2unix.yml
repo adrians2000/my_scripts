@@ -1,5 +1,5 @@
 ---
 - hosts: dev
-  become: no
+  become: yes
   roles:
    - dos2unix
