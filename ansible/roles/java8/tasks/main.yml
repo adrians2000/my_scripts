@@ -1,0 +1,12 @@
+---
+#Java 1.8 install
+- name: Check java version
+  shell: java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}' | awk -F "." '{print $2}'
+  register: java_version
+
+- name: uninstall previous java if < 8
+  package: name="java*" state=absent
+  when: java_version.stdout != "8"
+
+- name: java 8 package
+  package: name=java-1.8* state=latest
