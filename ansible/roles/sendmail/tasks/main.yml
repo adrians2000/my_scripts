@@ -1,0 +1,20 @@
+---
+- name: install sendmail software
+  package: name={{ item }} state=installed
+  with_items:
+   - sendmail
+   - sendmail-cf
+   - m4
+
+- name: "enable sendmail"
+  service: name="sendmail" state="started" enabled="yes"
+
+- name: sendmail SMART_HOST
+  template: src=sendmail.mc.j2 dest=/etc/mail/sendmail.mc
+      owner=root group=root mode=0644
+  register: sendmail_template
+
+- name: apply sendmail configuration
+  shell: m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
+  when: sendmail_template.changed
+  notify: restart sendmail
