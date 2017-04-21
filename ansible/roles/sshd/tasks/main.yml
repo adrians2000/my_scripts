@@ -1,0 +1,23 @@
+---
+- name: "openssh package"
+  package: name=openssh state=present
+  notify:
+    - restart sshd
+
+- name: "/etc/ssh/sshd_config"
+  template: src=sshd_config.j2 dest=/etc/ssh/sshd_config
+        owner=root group=root mode=0600
+  notify:
+    - restart sshd
+
+- name: "/etc/pam.d/sshd-auth-groups.allowed"
+  template: src=pam.d_sshd_groups.allowed.j2
+            dest=/etc/pam.d/pam.d_groups.allowed
+            owner=root group=root mode=0644
+
+- name: "/etc/pam.d/sshd"
+  template: src=pam.d_sshd.j2 dest=/etc/pam.d/sshd
+            owner=root group=root mode=0644
+
+- name: "set service state"
+  service: name=sshd state=started enabled=yes
