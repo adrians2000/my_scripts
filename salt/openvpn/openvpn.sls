@@ -28,13 +28,21 @@ copy /usr/local/etc/openvpn/openvpn.conf:
     - mode: 644
     - user: root
 
-{% for item in  'vars', 'openssl-1.0.cnf' %}
-copy {{ item }} file:
+copy openssl-1.0.cnf:
   file:
     - managed
     - source: salt://openvpn/{{ item }}
-    - name: {{ pillar['openvpn_directory'] }}/easy-rsa/{{ item }}
-{% endfor %}
+    - name: {{ pillar['openvpn_directory'] }}/easy-rsa/openssl-1.0.cnf
+    - mode: 644
+    - user: root
+
+copy vars:
+  file:
+    - managed
+    - source: salt://openvpn/vars
+    - name: {{ pillar['openvpn_directory'] }}/easy-rsa/vars
+    - mode: 644
+    - user: root
 
 {% for item in  pillar['keys_and_certs'] %}
 copy {{ item }}:
