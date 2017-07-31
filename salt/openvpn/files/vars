@@ -81,12 +81,12 @@ fi
 # you may omit any specific field by typing the "." symbol (not valid for
 # email.)
 
-set_var EASYRSA_REQ_COUNTRY    "Romania"
-set_var EASYRSA_REQ_PROVINCE   "Cluj"
-set_var EASYRSA_REQ_CITY   "Cluj-Napoca"
-set_var EASYRSA_REQ_ORG    "C55 org"
-set_var EASYRSA_REQ_EMAIL  "adrian.schiopu2000@gmail.com"
-set_var EASYRSA_REQ_OU     "C55"
+set_var EASYRSA_REQ_COUNTRY    "Country"
+set_var EASYRSA_REQ_PROVINCE   "County"
+set_var EASYRSA_REQ_CITY       "City"
+set_var EASYRSA_REQ_ORG        "Org"
+set_var EASYRSA_REQ_EMAIL      "email@email.com"
+set_var EASYRSA_REQ_OU         "OrgUnit"
 
 # Choose a size in bits for your keypairs. The recommended value is 2048.  Using
 # 2048-bit keys is considered more than sufficient for many years into the
