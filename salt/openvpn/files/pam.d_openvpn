@@ -1,0 +1,1 @@
+auth required /usr/local/lib/pam_google_authenticator.so

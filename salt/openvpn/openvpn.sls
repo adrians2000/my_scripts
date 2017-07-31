@@ -4,6 +4,26 @@ install openvpn:
     - name: openvpn
     - enable: True
 
+install google_auth:
+  - installed
+  - pkgs:
+    - pam_google_authenticator
+    - libqrencode
+
+mode 555 pam_google_authenticator.so:
+  file:
+    - name: /usr/local/lib/pam_google_authenticator.so
+    - mode 555
+    - user: root
+
+copy openvn to pam.d:
+  file:
+    - managed
+    - source: salt://openvpn/pam.d_openvpn
+    - name: /etc/pam.d/openvpn
+    - mode: 644
+    - user: root
+
 create {{ pillar['openvpn_directory'] }}:
   file:
     - directory
@@ -20,11 +40,11 @@ create {{ pillar['openvpn_directory'] }}/{{ item }}:
     - name: {{ pillar['openvpn_directory'] }}/{{ item }}
 {% endfor %}
 
-copy /usr/local/etc/openvpn/openvpn.conf:
+copy openvpn.conf:
   file:
     - managed
     - source: salt://openvpn/openvpn.conf
-    - name: /usr/local/etc/openvpn/openvpn.conf
+    - name: {{ pillar['openvpn_directory'] }}/openvpn.conf
     - mode: 644
     - user: root
 
