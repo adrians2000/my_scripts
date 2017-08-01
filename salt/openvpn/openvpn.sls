@@ -10,7 +10,7 @@ install google_auth:
     - pam_google_authenticator
     - libqrencode
 
-mode 555 pam_google_authenticator.so:
+chmode 555 pam_google_authenticator.so:
   file:
     - name: /usr/local/lib/pam_google_authenticator.so
     - mode 555
@@ -72,12 +72,38 @@ copy {{ item }}:
     - name: {{ pillar['openvpn_directory'] }}/keys/{{ item }}
 {% endfor %}
 
-{% for item in  'vars', 'openssl-1.0.cnf' %}
-restart openvpn, {{ item }} changed:
+start openvpn:
+  service.running:
+    - name: openvpn
+    - enable: True
+
+restart openvpn if files change:
   service.running:
     - name: openvpn
     - enable: True
     - reload: True
     - watch:
-      - {{ pillar['openvpn_directory'] }}/easy-rsa/{{ item }}
+      - {{ pillar['openvpn_directory'] }}/easy-rsa/vars
+      - {{ pillar['openvpn_directory'] }}/easy-rsa/openssl-1.0.cnf
+      - {{ pillar['openvpn_directory'] }}/openvpn.conf
+      - {{ pillar['openvpn_directory'] }}/keys/dh.pem
+      - {{ pillar['openvpn_directory'] }}/keys/ca.crt
+      - {{ pillar['openvpn_directory'] }}/keys/ta.key
+      - {{ pillar['openvpn_directory'] }}/keys/openvpn-server.crt
+      - {{ pillar['openvpn_directory'] }}/keys/openvpn-server.key
+
+{% for username, details in pillar.get('users', {}).items() %}
+{{ username }}:
+  group:
+    - present
+    - name: {{ username }}
+    - gid: {{ details.get('gid', '') }}
+
+  user:
+    - present
+    - fullname: {{ details.get('fullname','') }}
+    - name: {{ username }}
+    - shell: /bin/sh
+    - home: /home/{{ username }}
+    - password: {{ details.get('password','') }}
 {% endfor %}
