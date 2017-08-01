@@ -72,6 +72,22 @@ copy {{ item }}:
     - name: {{ pillar['openvpn_directory'] }}/keys/{{ item }}
 {% endfor %}
 
+{% for username, details in pillar.get('users', {}).items() %}
+{{ username }}:
+  group:
+    - present
+    - name: {{ username }}
+    - gid: {{ details.get('gid', '') }}
+
+  user:
+    - present
+    - fullname: {{ details.get('fullname','') }}
+    - name: {{ username }}
+    - shell: /bin/sh
+    - home: /home/{{ username }}
+    - password: {{ details.get('password','') }}
+{% endfor %}
+
 start openvpn:
   service.running:
     - name: openvpn
@@ -91,19 +107,3 @@ restart openvpn if files change:
       - {{ pillar['openvpn_directory'] }}/keys/ta.key
       - {{ pillar['openvpn_directory'] }}/keys/openvpn-server.crt
       - {{ pillar['openvpn_directory'] }}/keys/openvpn-server.key
-
-{% for username, details in pillar.get('users', {}).items() %}
-{{ username }}:
-  group:
-    - present
-    - name: {{ username }}
-    - gid: {{ details.get('gid', '') }}
-
-  user:
-    - present
-    - fullname: {{ details.get('fullname','') }}
-    - name: {{ username }}
-    - shell: /bin/sh
-    - home: /home/{{ username }}
-    - password: {{ details.get('password','') }}
-{% endfor %}
