@@ -5,15 +5,16 @@ install openvpn:
     - enable: True
 
 install google_auth:
-  - installed
-  - pkgs:
-    - pam_google_authenticator
-    - libqrencode
+  pkg:
+    - installed
+    - pkgs:
+      - pam_google_authenticator
+      - libqrencode
 
 chmode 555 pam_google_authenticator.so:
   file:
     - name: /usr/local/lib/pam_google_authenticator.so
-    - mode 555
+    - mode: 555
     - user: root
 
 copy openvn to pam.d:
@@ -45,22 +46,6 @@ copy openvpn.conf:
     - managed
     - source: salt://openvpn/openvpn.conf
     - name: {{ pillar['openvpn_directory'] }}/openvpn.conf
-    - mode: 644
-    - user: root
-
-copy openssl-1.0.cnf:
-  file:
-    - managed
-    - source: salt://openvpn/{{ item }}
-    - name: {{ pillar['openvpn_directory'] }}/easy-rsa/openssl-1.0.cnf
-    - mode: 644
-    - user: root
-
-copy vars:
-  file:
-    - managed
-    - source: salt://openvpn/vars
-    - name: {{ pillar['openvpn_directory'] }}/easy-rsa/vars
     - mode: 644
     - user: root
 
@@ -99,8 +84,6 @@ restart openvpn if files change:
     - enable: True
     - reload: True
     - watch:
-      - {{ pillar['openvpn_directory'] }}/easy-rsa/vars
-      - {{ pillar['openvpn_directory'] }}/easy-rsa/openssl-1.0.cnf
       - {{ pillar['openvpn_directory'] }}/openvpn.conf
       - {{ pillar['openvpn_directory'] }}/keys/dh.pem
       - {{ pillar['openvpn_directory'] }}/keys/ca.crt
