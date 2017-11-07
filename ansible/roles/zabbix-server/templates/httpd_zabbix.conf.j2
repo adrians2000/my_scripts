@@ -1,0 +1,66 @@
+<VirtualHost *:80>
+    ServerName  {{ ansible_eth0.ipv4.address }}
+</VirtualHost>
+
+<VirtualHost *:443>
+    # General setup for the virtual host, inherited from global configuration
+    DocumentRoot "/usr/share/zabbix"
+    ServerName {{ ansible_eth0.ipv4.address }}
+
+    # Use separate log files for the SSL virtual host; note that LogLevel
+    # is not inherited from httpd.conf.
+    ErrorLog logs/ssl_error_log
+    TransferLog logs/ssl_access_log
+    LogLevel warn
+
+    SSLEngine on
+    SSLCertificateFile /etc/pki/tls/certs/zabbix_ssl.crt
+    #SSLCertificateChainFile /path/to/intermediate_certificate
+    SSLCertificateKeyFile /etc/pki/tls/certs/zabbix_ssl.key
+    #SSLCACertificateFile    /path/to/all_ca_certs
+
+    # HSTS (mod_headers is required) (15768000 seconds = 6 months)
+    Header always set Strict-Transport-Security "max-age=15768000"
+
+    #   SSL Engine Options:
+    #   Set various options for the SSL engine.
+    #   o FakeBasicAuth:
+    #     Translate the client X.509 into a Basic Authorisation.  This means that
+    #     the standard Auth/DBMAuth methods can be used for access control.  The
+    #     user name is the `one line' version of the client's X.509 certificate.
+    #     Note that no password is obtained from the user. Every entry in the user
+    #     file needs this password: `xxj31ZMTZzkVA'.
+    #   o ExportCertData:
+    #     This exports two additional environment variables: SSL_CLIENT_CERT and
+    #     SSL_SERVER_CERT. These contain the PEM-encoded certificates of the
+    #     server (always existing) and the client (only existing when client
+    #     authentication is used). This can be used to import the certificates
+    #     into CGI scripts.
+    #   o StdEnvVars:
+    #     This exports the standard SSL/TLS related `SSL_*' environment variables.
+    #     Per default this exportation is switched off for performance reasons,
+    #     because the extraction step is an expensive operation and is usually
+    #     useless for serving static content. So one usually enables the
+    #     exportation for CGI and SSI requests only.
+    #   o StrictRequire:
+    #     This denies access when "SSLRequireSSL" or "SSLRequire" applied even
+    #     under a "Satisfy any" situation, i.e. when it applies access is denied
+    #     and no other module can change it.
+    #   o OptRenegotiate:
+    #     This enables optimized SSL connection renegotiation handling when SSL
+    #     directives are used in per-directory context.
+    #SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
+    #<Files ~ "\.(cgi|shtml|phtml|php3?)$">
+    #    SSLOptions +StdEnvVars
+    #</Files>
+    #<Directory "/var/www/cgi-bin">
+    #    SSLOptions +StdEnvVars
+    #</Directory>
+
+    #   Per-Server Logging:
+    #   The home of a custom SSL log file. Use this when you want a
+    #   compact non-error SSL logfile on a virtual host basis.
+    CustomLog logs/ssl_request_log \
+              "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+</VirtualHost>
+

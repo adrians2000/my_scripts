@@ -1,0 +1,4 @@
+---
+# Instal php and configure it for Zabbix
+- name: php package
+  package: name=php state=present

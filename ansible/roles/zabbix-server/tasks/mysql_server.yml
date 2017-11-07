@@ -1,0 +1,85 @@
+---
+## Install and set up mysql server. This is Zabbix specific.
+- include_vars: mysql_vars.yml
+
+# Install and start mysql-server
+- name: mysql repository
+  yum: name=http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+    state=present
+  when: os_version=="el7"
+
+- name: mysql-server package
+  package: name=mysql-server state=present
+  register: mysql_server
+
+- name: mysqld daemon
+  service: name="mysqld" state="started" enabled="yes"
+
+# Install packages needed for Ansible mysql module
+- name: mysql-devel package
+  package: name=mysql-devel state=present
+
+- name: python-devel package
+  package: name=python-devel state=present
+
+- name: gcc package
+  package: name=gcc state=present
+
+- name: pip package
+  easy_install: name=pip state=present
+
+- name: MySQL-Python package
+  pip: name=MySQL-python state=present
+
+# Do a bit of cleanup, setting root pass and removing anonymous users
+- name: mysql root password
+  mysql_user: user={{ root_user }} password={{ root_pass }}
+    login_user={{ root_user }}
+  ignore_errors: true
+
+- name: remove anonymous mysql account
+  mysql_user: name='' state=absent
+    login_user={{ root_user }} login_password={{ root_pass }}
+
+- name: remove test db
+  mysql_db: name=test state=absent
+    login_user={{ root_user }} login_password={{ root_pass }}
+
+- name: remove remote root access
+  command: >
+    mysql -uroot -p{{ root_pass }}
+    --execute "DELETE FROM mysql.user WHERE
+    User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+    FLUSH PRIVILEGES;"
+
+# Set up the zabbix database
+- name: Create MySQL zabbix db
+  mysql_db: name=zabbix state=present
+      login_user={{ root_user }} login_password={{ root_pass }}
+  register: db_status
+
+- name: Create zabbix user and grant privs
+  mysql_user: name={{ zabbix_user }} password={{ zabbix_pass }}
+      priv=zabbix.*:ALL
+      state=present
+      login_user={{ root_user }} login_password={{ root_pass }}
+
+# These have to be updated with every version of Zabbix
+# Maybe there's a better way, like get them straight from the zabbix package
+- name: Copy sql files to server
+  copy: src={{ item }} dest=/tmp/ owner=root group=root mode=0644
+  with_items:
+    - schema.sql
+    - images.sql
+    - data.sql
+  when: db_status.changed
+
+- name: Import schema
+  mysql_db: name=zabbix state=import
+      target=/tmp/{{ item }}
+      login_user={{ root_user }} login_password={{ root_pass }}
+  with_items:
+      - schema.sql
+      - images.sql
+      - data.sql
+  when: db_status.changed

@@ -1,0 +1,24 @@
+---
+- name: httpd package
+  package: name=httpd state=present
+
+- name: mod_ssl package
+  package: name=mod_ssl state=present
+
+- name: /etc/httpd/conf/httpd.conf
+  template: src=httpd.conf.j2 dest=/etc/httpd/conf/httpd.conf
+            owner=root group=root mode=0644
+  notify: restart httpd
+
+- name: copy ssl config
+  template: src=httpd_ssl.conf.j2 dest=/etc/httpd/conf.d/ssl.conf
+            owner=root group=root mode=0644
+  notify: restart httpd
+
+- name: /etc/httpd/conf.d/zabbix_vhost.conf
+  template: src=httpd_zabbix.conf.j2 dest=/etc/httpd/conf.d/zabbix_vhost.conf
+            owner=root group=root mode=0644
+  notify: restart httpd
+
+- name: httpd
+  service: name=httpd state=started enabled=yes
