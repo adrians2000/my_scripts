@@ -1,0 +1,145 @@
+#!/usr/bin/env python
+#
+#  Author: Neil Ferguson
+#  Date:   2010-01-28
+#  Desc:   Checks the process spawn rate as well as the  number of
+#          processes in a running/blocked state.  Thresholds apply
+#          to the spawn rate.
+#
+
+import optparse
+import os.path
+import re
+import sys
+import time
+import os
+
+statsFile    = "/proc/stat"
+cacheDir     = "/tmp"
+cacheFile    = os.path.join(cacheDir, os.path.basename(sys.argv[0]))
+warning      = 0
+critical     = 0
+
+###  Ive added this to wipe zero sized tmp files - DS
+if os.path.isfile(cacheFile):
+    cachesize    = os.path.getsize(cacheFile)
+    if cachesize == 0:
+        os.remove(cacheFile)
+
+def pluginError(err):
+  print err
+  sys.exit(3)
+
+def checkThresholds(spawnRate):
+  if critical > 0 and spawnRate > critical:
+    return 2
+  elif warning > 0 and spawnRate > warning:
+    return 1
+
+  return 0
+
+def readStats():
+  if os.path.exists(statsFile):
+    try:
+      f = open(statsFile, "r")
+    except:
+      pluginError("Could not open kernel statistics file (%s) for reading" % (statsFile))
+
+    # Find the process stats (total, running, blocked)
+    for line in f.readlines():
+      if re.match("procs_running", line):
+        fields = line.split()
+        running = fields[1]
+      elif re.match("procs_blocked", line):
+        fields = line.split()
+        blocked = fields[1]
+      elif re.match("processes", line):
+        fields = line.split()
+        total = fields[1]
+
+    return [ float(total), float(running), float(blocked) ]
+  else:
+    pluginError("Kernel statistics file %s not found" % (statsFile))
+
+
+def readCache():
+  fields = [ 0, 0 ]
+
+  # No cache file?  Return.
+  if os.path.exists(cacheFile):
+    try:
+      f = open(cacheFile, "r")
+      line = f.readline()
+      f.close()
+
+      fields = []
+      for field in line.split():
+        fields.append(float(field))
+    except:
+      pluginError("Could not read cache file %s" % (cacheFile))
+
+  return fields
+
+
+def writeCache(timestamp, spawnTotal):
+  try:
+    f = open(cacheFile, "w+")
+    f.write("%s %s" % (timestamp, spawnTotal))
+    f.close()
+  except:
+    pluginError("Could not save data in cache file %s" % (cacheFile))
+
+
+if __name__ == "__main__":
+  # Options
+  parser = optparse.OptionParser()
+  parser.add_option('-w', '--warning',
+    action="store",
+    type="string",
+    dest="warning",
+    default=0,
+    help="Warning threshold for process spawn rate (in procs/sec)")
+  parser.add_option('-c', '--critical',
+    action="store",
+    type="string",
+    dest="critical",
+    default=0,
+    help="Critical threshold for process spawn rate (in procs/sec)")
+
+  # Grab the options
+  (options,remainder) = parser.parse_args()
+
+  # Validate first
+  if (options.warning and not re.match(r"^[0-9\.]+$", options.warning)) or (options.critical and not re.match(r"^[0-9\.]+$", options.critical)):
+    pluginError("Warning and critical values must be (positive) numbers")
+
+  warning = float(options.warning)
+  critical = float(options.critical)
+
+  now    = time.time()
+  spawnRate    = 0
+  runningCount     = 0
+  blockedCount = 0
+
+  # Last run statistics
+  (prevTime, prevTotal) = readCache()
+
+  # Current stats
+  (curTotal, runningCount, blockedCount) = readStats()
+
+  # If this isn't the first run...
+  if prevTime > 0:
+    spawnRate = round((curTotal - prevTotal)/(now - prevTime), 2)
+
+  # Write the current stats
+  writeCache(now, curTotal)
+
+  # Friendly output and perf data
+#  print "Process spawn rate %.2f /s, %s processes running, %s processes blocked | spawnRate=%s;%s;%s, running=%s blocked=%s" % (
+#          spawnRate, runningCount, blockedCount, spawnRate, warning, critical, runningCount, blockedCount)
+#print spawn rate
+  print "%.2f" % (spawnRate)
+
+
+  exitCode = checkThresholds(spawnRate)
+  sys.exit(exitCode) 

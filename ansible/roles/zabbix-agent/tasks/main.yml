@@ -1,0 +1,60 @@
+---
+- include_vars: vault.yml
+
+# because of a combination of "we have to open tickets for new repos" and
+# "each linux distribution uses a different way of versioning their OS"
+# we set a fact for the os version which will be used to select the
+# proper package to install. This is also used in zabbix_agentd.conf
+- name: set OS to RHEL5 compatible
+  set_fact: os_version="el5"
+  when: ansible_os_family=="RedHat" and ansible_distribution_major_version=="5"
+- name: set OS to RHEL6 compatible
+  set_fact: os_version="el6"
+  when: (ansible_os_family=="RedHat" and ansible_distribution_major_version=="6")
+      or ansible_distribution=="Amazon"
+- name: set OS to RHEL7 compatible
+  set_fact: os_version="el7"
+  when: ansible_os_family=="RedHat" and ansible_distribution_major_version=="7"
+
+- name: zabbix-agent package
+  yum: name=zabbix-agent-{{ os_version }} state=latest update_cache=yes
+  notify: 
+      - restart zabbix-agent
+
+- name: /etc/zabbix/zabbix_agentd.conf
+  template: src=zabbix_agentd.conf.j2 dest=/etc/zabbix/zabbix_agentd.conf
+      owner=root group=zabbix mode=0640
+  notify: 
+      - restart zabbix-agent
+
+- name: /usr/bin/check_linux_procstat
+  template: src=check_linux_procstat.j2 dest=/usr/bin/check_linux_procstat
+      owner=root group=zabbix mode=0640
+      
+- name: /etc/zabbix/zabbix_agentd.d/userparameter_mysql.conf
+  template: src=userparameter_mysql.conf.j2 dest=/etc/zabbix/zabbix_agentd.d/userparameter_mysql.conf
+      owner=root group=zabbix mode=0640
+  notify: 
+      - restart zabbix-agent  
+      
+- name: /etc/zabbix/zabbix_agentd.d/userparameter_nfs.conf
+  copy: src=userparameter_nfs.conf dest=/etc/zabbix/zabbix_agentd.d/userparameter_nfs.conf
+    owner=root group=root mode=0644
+  when: "'s3_gateway-prd' in group_names"
+  notify: 
+      - restart zabbix-agent
+      
+### We'll set up certificate based encryption
+### agents can't auto-register with PSK, the key has to be set for each host
+### in the web interface or through API. Certs are easier to use after all
+#- name: /etc/zabbix/zabbix_agentd.psk
+#  template: src=zabbix_agentd.psk.j2 dest=/etc/zabbix/zabbix_agentd.psk
+#    owner=root group=zabbix mode=0640
+#  notify:
+#      - stop zabbix-agent
+#      - start zabbix-agent
+
+- name: Enable Zabbix Agent
+  service: name=zabbix-agent enabled=yes
+  notify:
+      - restart zabbix-agent
