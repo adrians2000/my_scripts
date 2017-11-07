@@ -6,4 +6,7 @@
 10.0.0.0        ansible_ssh_user=
 
 [zabbix-server]
-10.0.0.0        ansible_ssh_user=centos
+10.0.0.0        ansible_ssh_user=
+
+[zabbix-agent]
+10.0.0.0        ansible_ssh_user=
