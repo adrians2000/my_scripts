@@ -1,0 +1,6 @@
+---
+- name: zabbix-server
+  become: yes
+  hosts: zabbix-server*
+  roles:
+    - zabbix-server
