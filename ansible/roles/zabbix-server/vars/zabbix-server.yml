@@ -1,0 +1,4 @@
+---
+# Vars used in installing zabbix
+zabbix_user: zabbix
+zabbix_group: zabbix
